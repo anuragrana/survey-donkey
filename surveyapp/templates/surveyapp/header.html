@@ -1,0 +1,14 @@
+<div class="row" style="margin:0px 0px 10px 0px;color:black; padding:10px 0px 5px 0px;border-bottom: 1px solid black;">
+    <a href="{% url 'surveyapp:home' %}">
+        <div class="col-md-4 col-sm-4">
+            <span id="sitename" style="font-size:20px; font-weight:bold;color:black;">
+                {{project_name_spaces}}
+            </span>
+        </div>
+    </a>
+    <div class="col-md-8 col-sm-8 text-right">
+        <a href="{% url 'surveyapp:survey_add' %}" title="New Survey">
+            <span class="glyphicon glyphicon-plus"></span>
+        </a>
+    </div>
+</div>

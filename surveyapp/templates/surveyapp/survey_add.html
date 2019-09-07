@@ -1,0 +1,654 @@
+{% extends 'surveyapp/parent.html' %}
+{% load static %}
+{% block main %}
+
+{% include 'surveyapp/message.html' %}
+
+<div class="row">
+    <div class="col-md-6" style="border-right: 1px solid black;">
+
+        <div class="row">
+            <div class="col-md-12">
+                <input type="text"
+                       placeholder="Survey Title"
+                       name="survey_title"
+                       id="survey_title"
+                       maxlength="100" class="form-control myinput">
+                {% csrf_token %}
+            </div>
+        </div>
+
+
+        <div class="row" style="border: 0px solid #555555;padding:10px;">
+            <div class="col-md-12">
+                Add Question To Survey:<br><br>
+                <div id="questionsdiv">
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="input-group">
+                    <select class="form-control" id="questionTypeAdd">
+                        <option value="">-- Select Question Type --</option>
+                        <option value="st">Small Text (Text Input)</option>
+                        <option value="lt">Large Text (Textarea)</option>
+                        <option value="rb">Multiple Choice, Single Select (Radio Button)</option>
+                        <option value="cb">Multiple Choice, Multi Select (Check Box)</option>
+                    </select>
+                    <span class="input-group-btn">
+                        <button class="btn btn-success" onclick="addQuestion();">
+                            Add A Question
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-6">
+        <div class="row" style="margin-bottom:10px;border-bottom:1px solid black;">
+            <div class="col-md-12 text-center">
+                <strong>Preview</strong>
+                <span class="glyphicon glyphicon-refresh"
+                      onclick="reloadPreview();"
+                      style="cursor:pointer;"
+                      title="Refresh Preview">
+                </span>
+            </div>
+        </div>
+
+        <div class="row" style="padding:10px;">
+            <div class="col-md-12">
+                <div id="preview_board">
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="padding:10px;">
+            <div class="col-md-12">
+                <div id="save_btn_div">
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script type="text/javascript">
+    var questionsAdded = 0;
+    var KEY_PREFIX = "survey11_";
+    var qlist = [];
+
+    function addQuestion() {
+        var e = document.getElementById("questionTypeAdd");
+        var questionType = e.options[e.selectedIndex].value;
+
+        var questionsdiv = document.getElementById("questionsdiv");
+
+        var thisQuestionId = generateRandomId(6);
+
+        switch (questionType) {
+            case "st":
+                var el = createTextInputQuestion(questionType, thisQuestionId);
+                break;
+            case "lt":
+                var el = createTextInputQuestion(questionType, thisQuestionId);
+                break;
+            case "rb":
+                var el = createRadioButtonQuestion(questionType, thisQuestionId);
+                break;
+            case "cb":
+                var el = createRadioButtonQuestion(questionType, thisQuestionId);
+                break;
+            default:
+                alert("Invalid Choice");
+        }
+
+        questionsdiv.appendChild(el);
+        var hr = document.createElement("hr");
+        questionsdiv.appendChild(hr);
+
+        questionsAdded = questionsAdded + 1;
+
+        console.log(qlist);
+    }
+
+
+    function createTextInputQuestion(questionType, thisQuestionId) {
+        var d = document.createElement("div");
+        d.classList.add("question", "text-left");
+        d.id = "question_" + thisQuestionId;
+
+        var d1 = document.createElement("div");
+        d1.id = "question_" + thisQuestionId + "_text";
+
+        var s = document.createElement("span");
+        if (questionType == "st") {
+            s.textContent = "Question Type: Small Text (Text Input)"
+        } else if (questionType == "lt") {
+            s.textContent = "Question Type: Large Text (Textarea)"
+        } else {
+            alert("Invalid Question Type - createTextInputQuestion");
+        }
+
+        d1.appendChild(s);
+
+        var d2 = document.createElement("div");
+        d2.id = "question_" + thisQuestionId + "_text_input_div";
+
+        var d3 = document.createElement("div");
+        d3.classList.add("input-group");
+
+        var s1 = document.createElement("span");
+        s1.classList.add("input-group-addon");
+        s1.textContent = "Question Text";
+
+        var inp = document.createElement("input");
+        inp.setAttribute("type", "text");
+        inp.classList.add("form-control");
+        inp.id = "question_" + thisQuestionId + "_text_input";
+        inp.setAttribute("placeholder", "Question text");
+        inp.setAttribute("value", "");
+        inp.oninput = function() {updateQuestionText(thisQuestionId)};
+
+        d3.appendChild(s1);
+        d3.appendChild(inp);
+
+        d2.appendChild(d3);
+
+        d.appendChild(d1);
+        d.appendChild(d2);
+
+        // update dictionary
+        var dtemp = {};
+        dtemp["id"] = thisQuestionId;
+        dtemp["type"] = questionType;
+        dtemp["text"] = "";
+        qlist.push(dtemp);
+
+        return d;
+    }
+
+    function createRadioButtonQuestion(questionType, thisQuestionId) {
+
+        var d = document.createElement("div");
+        d.classList.add("question", "text-left");
+        d.id = "question_" + thisQuestionId;
+
+        var d1 = document.createElement("div");
+        d1.id = "question_" + thisQuestionId + "_text";
+
+        var s = document.createElement("span");
+        if (questionType == "rb") {
+            s.textContent = "Question Type: Multiple Choice, Single Select (Radio Button)"
+        } else if (questionType == "cb") {
+            s.textContent = "Question Type: Multiple Choice, Multi Select (Check Box)"
+        }
+
+        d1.appendChild(s);
+
+        var d2 = document.createElement("div");
+        d2.id = "question_" + thisQuestionId + "_text_input_div";
+
+        var d3 = document.createElement("div");
+        d3.classList.add("input-group");
+
+        var s1 = document.createElement("span");
+        s1.classList.add("input-group-addon");
+        s1.textContent = "Question Text";
+
+        var inp = document.createElement("input");
+        inp.setAttribute("type", "text");
+        inp.classList.add("form-control");
+        inp.id = "question_" + thisQuestionId + "_text_input";
+        inp.setAttribute("placeholder", "Question text");
+        inp.oninput = function() {updateQuestionText(thisQuestionId)};
+
+        d3.appendChild(s1);
+        d3.appendChild(inp);
+
+        var d4 = document.createElement("div");
+        d4.id = "question_" + thisQuestionId + "_radio_options";
+
+        var d5 = document.createElement("div");
+        d5.classList.add("input-group");
+
+        var s2 = document.createElement("span");
+        s2.classList.add("input-group-addon");
+        s2.textContent = "Option 1";
+
+        var inp1 = document.createElement("input");
+        inp1.setAttribute("type", "text");
+        inp1.classList.add("form-control");
+        var option1Id = generateRandomId(6);
+        inp1.id = "question_" + thisQuestionId + "_option_" + option1Id + "_input";
+        inp1.setAttribute("placeholder", "Option 1 Label");
+        inp1.oninput = function() {updateOptionText(thisQuestionId, option1Id)};
+
+        d5.appendChild(s2);
+        d5.appendChild(inp1);
+        d4.appendChild(d5);
+
+        if (questionType == "rb" ) {
+            var d6 = document.createElement("div");
+            d6.classList.add("input-group");
+
+            var s3 = document.createElement("span");
+            s3.classList.add("input-group-addon");
+            s3.textContent = "Option 2";
+
+            var inp2 = document.createElement("input");
+            inp2.setAttribute("type", "text");
+            inp2.classList.add("form-control");
+            var option2Id = generateRandomId(6);
+            inp2.id = "question_" + thisQuestionId + "_option_" + option2Id + "_input";
+            inp2.setAttribute("placeholder", "Option 2 Label");
+            inp2.oninput = function() {updateOptionText(thisQuestionId, option2Id)};
+
+            d6.appendChild(s3);
+            d6.appendChild(inp2);
+
+            d4.appendChild(d6);
+        }
+
+        d2.appendChild(d3);
+        d2.appendChild(d4);
+
+        var addMoreButton = document.createElement("INPUT");
+        addMoreButton.setAttribute("type", "button");
+        addMoreButton.setAttribute("value", "Add Option");
+        addMoreButton.classList.add("btn", "btn-primary", "mybtn", "btn-sm");
+        addMoreButton.onclick = function() {addMoreOption(thisQuestionId)};
+
+        d2.appendChild(addMoreButton);
+
+        d.appendChild(d1);
+        d.appendChild(d2);
+
+        if (questionType == "rb") {
+            updateDictForMultiOptions(questionType, thisQuestionId, option1Id, option2Id);
+        }
+        if (questionType == "cb") {
+            updateDictForMultiOptions(questionType, thisQuestionId, option1Id);
+        }
+
+        return d;
+    }
+
+    function addMoreOption(thisQuestionId) {
+        var q = document.getElementById("question_" + thisQuestionId + "_radio_options");
+        var childElementCount = parseInt(q.childElementCount);
+
+        var d6 = document.createElement("div");
+        d6.classList.add("input-group");
+
+        var s3 = document.createElement("span");
+        s3.classList.add("input-group-addon");
+        s3.textContent = "Option " + (childElementCount + 1);
+
+        var inp2 = document.createElement("input");
+        inp2.setAttribute("type", "text");
+        inp2.classList.add("form-control");
+        var option2Id = generateRandomId(6);
+        inp2.id = "question_" + thisQuestionId + "_option_" + option2Id + "_input";
+        inp2.setAttribute("placeholder", "Option " + (childElementCount + 1) + " Label");
+        inp2.oninput = function() {updateOptionText(thisQuestionId, option2Id)};
+
+        d6.appendChild(s3);
+        d6.appendChild(inp2);
+
+        q.appendChild(d6);
+
+        updateDictForNewOption(thisQuestionId, option2Id);
+
+    }
+
+    function updateQuestionText(thisQuestionId) {
+        var questionText = document.getElementById("question_" + thisQuestionId + "_text_input").value;
+        for (i = 0 ; i < qlist.length; i++) {
+            var q = qlist[i];
+            if (q["id"] == thisQuestionId) {
+                q["text"] = questionText;
+                break;
+            }
+        }
+
+        console.log(qlist);
+    }
+
+    function updateOptionText(thisQuestionId, optionId) {
+        var optionText = document.getElementById("question_" + thisQuestionId + "_option_" + optionId + "_input").value;
+        for (i = 0 ; i < qlist.length; i++) {
+            var q = qlist[i];
+            if (q["id"] == thisQuestionId) {
+                for (j = 0; j < q["options"].length; j++) {
+                    var op = q["options"][j];
+                    if (op["id"] == optionId) {
+                        op["text"] = optionText;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+
+        console.log(qlist);
+    }
+
+    function getQuestion(q) {
+        if (q["type"] == "st") {
+            var el = createTextInput(q);
+        } else if (q["type"] == "lt") {
+            var el = createTextArea(q);
+        } else if (q["type"] == "rb") {
+            var el = createRadioButton(q);
+        } else if (q["type"] == "cb") {
+            var el = createCheckbox(q);
+        } else {
+            console.log("Invalid Question Type");
+            el = null;
+        }
+        return el;
+    }
+
+
+    function createTextInput(q) {
+        var d = document.createElement("div");
+
+        var s = document.createElement("span");
+        s.textContent = "Q: " + q["text"]
+
+        var inp = document.createElement("input");
+        inp.setAttribute("type", "text");
+        inp.classList.add("form-control", "myinput");
+        inp.style.marginTop = "5px";
+
+        d.appendChild(s);
+        d.appendChild(inp);
+
+        return d;
+    }
+
+    function createTextArea(q) {
+        var d = document.createElement("div");
+
+        var s = document.createElement("span");
+        s.textContent = "Q: " + q["text"]
+
+        var inp = document.createElement("textarea");
+        inp.setAttribute("rows", "3");
+        inp.classList.add("form-control", "myinput");
+        inp.style.marginTop = "5px";
+
+        d.appendChild(s);
+        d.appendChild(inp);
+
+        return d;
+    }
+
+    function createRadioButton(q) {
+        var d = document.createElement("div");
+
+        var s = document.createElement("span");
+        s.textContent = "Q: " + q["text"]
+
+        d.appendChild(s);
+
+        // options div
+        var d1 = document.createElement("div");
+
+        var d2 = document.createElement("div");
+        d2.style.marginBottom = "5px";
+
+        d1.appendChild(d2);
+
+        var options = q["options"];
+        for (var i = 0; i < options.length; i++) {
+            var op = options[i];
+
+            var dtemp = document.createElement("div");
+
+            var r = document.createElement("input");
+            r.setAttribute("type", "radio");
+
+            dtemp.appendChild(r);
+
+            var s = document.createElement("span");
+            s.textContent = " " + op["text"]
+
+            dtemp.appendChild(s);
+
+            d1.appendChild(dtemp);
+        }
+
+        d.appendChild(d1);
+
+        return d;
+    }
+
+    function createCheckbox(q) {
+
+        var d = document.createElement("div");
+
+        var s = document.createElement("span");
+        s.textContent = "Q: " + q["text"]
+
+        d.appendChild(s);
+
+        // options div
+        var d1 = document.createElement("div");
+
+        var d2 = document.createElement("div");
+        d2.style.marginBottom = "5px";
+
+        d1.appendChild(d2);
+
+        var options = q["options"];
+        for (var i = 0; i < options.length; i++) {
+            var op = options[i];
+
+            var dtemp = document.createElement("div");
+
+            var r = document.createElement("input");
+            r.setAttribute("type", "checkbox");
+
+            dtemp.appendChild(r);
+
+            var s = document.createElement("span");
+            s.textContent = " " + op["text"]
+
+            dtemp.appendChild(s);
+
+            d1.appendChild(dtemp);
+        }
+
+        d.appendChild(d1);
+
+        return d;
+    }
+
+    function clearPreview() {
+        var previewBoard = document.getElementById("preview_board");
+
+        // clear preview
+        while (previewBoard.firstChild) {
+            previewBoard.removeChild(previewBoard.firstChild);
+        }
+
+        var s = document.getElementById("save_btn_div");
+
+        while (s.firstChild) {
+            s.removeChild(s.firstChild);
+        }
+    }
+
+    function reloadPreview() {
+        console.log("Creating preview");
+        var previewBoard = document.getElementById("preview_board");
+        clearPreview();
+
+        noOfQues = qlist.length;
+
+        for (var i = 0 ; i < noOfQues; i++) {
+            var q = qlist[i];
+            var qel = getQuestion(q);
+            previewBoard.appendChild(qel);
+            var hr = document.createElement("hr");
+            previewBoard.appendChild(hr);
+
+        }
+
+        // if there are questions, show the save button after displaying them
+        if (noOfQues > 0) {
+            var btn = document.createElement("input");
+            btn.classList.add("btn", "btn-success", "mybtn");
+            btn.setAttribute("value", "Save Survey");
+            btn.onclick = function() {saveSurvey()};
+
+            var s = document.getElementById("save_btn_div");
+            s.appendChild(btn);
+        }
+
+    }
+
+    document.getElementById("survey_title").oninput = function() {
+        var survey_title = document.getElementById("survey_title").value;
+        store("survey_title", survey_title);
+    }
+
+    function store(key, value) {
+        sessionStorage.setItem(KEY_PREFIX + key, value);
+    }
+
+    function get(key) {
+        return sessionStorage.getItem(KEY_PREFIX + key);
+    }
+
+    function updateDictForMultiOptions(questionType, thisQuestionId, option1Id, option2Id) {
+        var d = {};
+        d["id"] = thisQuestionId;
+        d["type"] = questionType;
+        d["text"] = "";
+
+        if (questionType == "rb") {
+            d["options"] = [];
+
+            // add two default options
+            var od = {};
+            od["id"] = option1Id;
+            od["text"] = "";
+
+            d["options"].push(od);
+
+            var od = {};
+            od["id"] = option2Id;
+            od["text"] = "";
+
+            d["options"].push(od);
+        }
+
+        if (questionType == "cb") {
+            d["options"] = [];
+            // add one default options
+            var od = {};
+            od["id"] = option1Id;
+            od["text"] = "";
+
+            d["options"].push(od);
+        }
+
+        qlist.push(d);
+
+    }
+
+
+    function generateRandomId(length) {
+        var result = '';
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    }
+
+    function updateDictForNewOption(thisQuestionId, optionId) {
+        var od = {};
+        od["id"] = optionId;
+        od["text"] = "";
+
+        for (i = 0 ; i < qlist.length; i++) {
+            q = qlist[i];
+            if (q["id"] == thisQuestionId) {
+                q["options"].push(od);
+                break;
+            }
+        }
+
+        console.log(qlist);
+    }
+
+    function saveSurvey() {
+        var data = JSON.stringify(qlist);
+        console.log(data);
+        var url = window.location.href;
+        console.log(url);
+        var csrf = document.getElementsByName("csrfmiddlewaretoken")[0].value;
+        console.log(csrf);
+        var survey_title = get("survey_title");
+        console.log(survey_title)
+        $.ajax({
+            url : url,
+            data : {
+                "csrfmiddlewaretoken" : csrf,
+                "data": data,
+                "survey_title": survey_title
+            },
+            method: "POST",
+            dataType : "json",
+            success : function (response) {
+                if (response.is_success) {
+                    green('Fiddle Saved. URL: ' + response.survey_url);
+                    window.location.href = response.survey_url;
+                } else {
+                    red(response.error_message);
+                }
+            },
+            error: function (xhr, textStatus) {
+                // console.log(textStatus); // print 'error'
+                //console.log('ajax error = ' + xhr.statusText); // prints textual representation of error
+                // console.log('ajax error = ' + xhr.status); // print 429 in case of too many requests
+                red(xhr.statusText);
+            }
+        });
+
+    }
+
+    function red() {
+
+    }
+
+
+    function green() {
+
+
+    }
+
+</script>
+
+
+<style type="text/css">
+
+    .question{
+        padding: 0px 0px 10px 0px;
+        margin: 0px 0px 10px 0px;
+    }
+
+
+</style>
+
+{% endblock main %}

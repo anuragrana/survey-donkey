@@ -1,0 +1,29 @@
+{% extends 'surveyapp/parent.html' %}
+{% load static %}
+{% block main %}
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        {% include 'surveyapp/message.html' %}
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <a href="{% url 'surveyapp:survey_add' %}">Create Survey</a>
+    </div>
+</div>
+<hr>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <a href="{% url 'surveyapp:survey_response_all' %}">Responses</a>
+    </div>
+</div>
+<hr>
+
+{% endblock main %}
