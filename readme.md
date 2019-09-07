@@ -1,7 +1,7 @@
-### Details
- Project: Survey Donkey  
- Developer: Anurag Rana  
- Team Name: Code108
+#### Details
+ - Project: Survey Donkey  
+ - Developer: Anurag Rana  
+ - Team Name: Code108
 --------
 #### Setup:
 ##### Prerequisits:
@@ -30,9 +30,6 @@
     - Multiple Choice, single select - Radio button
     - Multiple Choice, Multi Select - Checkbox
 - Preview on right side.
-- Delete Question
-- Edit Survey
-- Share link of Survey
 - Fill survey
 - Store responses
 - Show Results
@@ -40,6 +37,9 @@
 ##### Remaining:
 - Validations Frontend and backend.
 - Exception handling
+- Delete Question
+- Edit Survey
+
 ----------    
 #### Future Work:  
  - Reordering of questions
@@ -47,5 +47,4 @@
      - Or by drag and drop.
      - Or up and down arrow on each question.
  - Color scheme
- - Number of questions per page
- - Progress bar
+ - Number of questions per page, Progress bar
