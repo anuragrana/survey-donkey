@@ -70,6 +70,25 @@
 
         <div class="row" style="padding:10px;">
             <div class="col-md-12">
+                <div id="div_error_message" style="display:none;">
+                    <div class="row" style="margin: 10px;color:red;">
+                        <div class="col-md-12" style="border: 1px solid red; border-radius: 2px; padding:10px;">
+                            <span id="error_message"></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="div_success_message" style="display:none;">
+                    <div class="row" style="margin: 10px;color:green;">
+                        <div class="col-md-12" style="border: 1px solid green; border-radius: 2px; padding:10px;">
+                            <span id="success_message"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="padding:10px;">
+            <div class="col-md-12">
                 <div id="save_btn_div">
                 </div>
             </div>
@@ -82,6 +101,7 @@
     var questionsAdded = 0;
     var KEY_PREFIX = "survey11_";
     var qlist = [];
+    //var msg_timeout = 30;
 
     function addQuestion() {
         var e = document.getElementById("questionTypeAdd");
@@ -599,8 +619,11 @@
         console.log(url);
         var csrf = document.getElementsByName("csrfmiddlewaretoken")[0].value;
         console.log(csrf);
-        var survey_title = get("survey_title");
+        var survey_title = document.getElementById("survey_title").value;
         console.log(survey_title)
+        <!--if (survey_title == "") {-->
+            <!--red("Survey Title is mandatory");-->
+        <!--}-->
         $.ajax({
             url : url,
             data : {
@@ -612,7 +635,7 @@
             dataType : "json",
             success : function (response) {
                 if (response.is_success) {
-                    green('Fiddle Saved. URL: ' + response.survey_url);
+                    //green('Survey Saved. URL: ' + response.survey_url);
                     window.location.href = response.survey_url;
                 } else {
                     red(response.error_message);
@@ -628,15 +651,25 @@
 
     }
 
-    function red() {
 
+    function green(msg) {
+        $("#div_error_message").css("display","none");
+        $("#div_success_message").css("display","block");
+        $("#success_message").text(msg);
+        setTimeout(function() {
+            $("#div_success_message").css("display","none");
+        }, msg_timeout);
     }
 
-
-    function green() {
-
-
+    function red(msg) {
+        $("#div_error_message").css("display","block");
+        $("#div_success_message").css("display","none");
+        $("#error_message").text(msg);
+        setTimeout(function() {
+            $("#div_error_message").css("display","none");
+        }, msg_timeout);
     }
+
 
 </script>
 
@@ -647,6 +680,7 @@
         padding: 0px 0px 10px 0px;
         margin: 0px 0px 10px 0px;
     }
+
 
 
 </style>

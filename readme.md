@@ -1,7 +1,6 @@
 #### Details
  - Project: Survey Donkey  
  - Developer: Anurag Rana  
- - Team Name: Code108
 --------
 #### Setup:
 ##### Prerequisits:
@@ -48,3 +47,4 @@
      - Or up and down arrow on each question.
  - Color scheme
  - Number of questions per page, Progress bar
+ - Authorization
